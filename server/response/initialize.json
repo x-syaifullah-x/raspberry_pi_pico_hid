@@ -1,0 +1,28 @@
+{
+    "event": 0,
+    "data": {
+        "led": {
+            "status": 1
+        },
+        "adc": {
+            "4": {
+                "input": 4,
+                "voltage": 0.7156043956043956,
+                "temp": 21.42
+            }
+        },
+        "tb_6612_fng": {
+            "power": true,
+            "motor": {
+                "1": {
+                    "direction": 0,
+                    "speed": 1
+                },
+                "2": {
+                    "direction": 0,
+                    "speed": 1
+                }
+            }
+        }
+    }
+}

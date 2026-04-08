@@ -1,0 +1,21 @@
+#pragma once
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#if CONFIG_ESP_WIFI_AUTH_OPEN
+#define ESP_WIFI_SCAN_AUTH_MODE_THRESHOLD WIFI_AUTH_OPEN
+#elif CONFIG_ESP_WIFI_AUTH_WPA2_PSK
+#define ESP_WIFI_SCAN_AUTH_MODE_THRESHOLD WIFI_AUTH_WPA2_PSK
+#elif CONFIG_ESP_WIFI_AUTH_WPA_WPA2_PSK
+#define ESP_WIFI_SCAN_AUTH_MODE_THRESHOLD WIFI_AUTH_WPA_WPA2_PSK
+#else
+#define ESP_WIFI_SCAN_AUTH_MODE_THRESHOLD WIFI_AUTH_WPA2_PSK
+#endif
+
+static const char* TAG_STA = "WiFi Sta";
+
+#ifdef __cplusplus
+}
+#endif

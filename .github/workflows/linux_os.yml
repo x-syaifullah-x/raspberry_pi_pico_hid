@@ -1,0 +1,87 @@
+name: LINUX_OS
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: debian:13
+    strategy:
+      matrix:
+        arch:
+          - x86_64
+          - aarch64
+    env:
+      DEBIAN_FRONTEND : noninteractive
+    steps:
+      - name: Update OS
+        run: |
+          apt-get update 2>&1 >/dev/null
+      - name: Install GIT
+        run: |
+          apt install --no-install-suggests --no-install-recommends -y git openssh-client ca-certificates
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: master
+          submodules: recursive
+          fetch-depth: 1
+      - name: Build Controller
+        if: matrix.arch == 'x86_64'
+        run: |
+          apt-get install --no-install-suggests --no-install-recommends -y make
+          make -f controller/Makefile dependencies
+          make -f controller/Makefile configure
+          make -f controller/Makefile build
+      - name: Upload Controller
+        if: matrix.arch == 'x86_64'
+        uses: actions/upload-artifact@v7
+        with:
+          name: controller.uf2
+          path: controller/build/controller.uf2
+      - name: Build Commander Vendor
+        run: |
+          apt install --no-install-suggests --no-install-recommends -y make golang
+          make -f server/commander_vendor/Makefile dependencies
+          make -f server/commander_vendor/Makefile build_static LIBUSB_ARCH=${{ matrix.arch }}
+      - name: Upload Commander Vendor
+        uses: actions/upload-artifact@v7
+        with:
+          name: commander-vendor-linux-${{ matrix.arch }}
+          path: server/commander_vendor/build/commander-vendor-linux-${{ matrix.arch }}
+
+  upload_artifact:
+      needs: build
+      runs-on: ubuntu-latest
+      permissions: write-all
+      env:
+        DEBIAN_FRONTEND : noninteractive
+        GITHUB_TOKEN    : ${{ secrets.GITHUB_TOKEN }}
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v6
+        - name: A
+          uses: actions/download-artifact@v7
+          with:
+            name: controller.uf2
+        - name: B
+          uses: actions/download-artifact@v7
+          with:
+            name: commander-vendor-linux-aarch64
+        - name: C
+          uses: actions/download-artifact@v7
+          with:
+            name: commander-vendor-linux-x86_64
+
+        - name: Upload binary
+          run: |
+            VERSION_NAME="v1.0"
+            gh release create "${VERSION_NAME}" --title "$VERSION_NAME" --latest=true --generate-notes || true
+            gh release upload "${VERSION_NAME}" \
+            controller.uf2 \
+            commander-vendor-linux-aarch64 \
+            commander-vendor-linux-x86_64 \
+            --clobber

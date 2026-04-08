@@ -1,0 +1,9 @@
+{
+    "go.testFlags": [
+        "-count=1"
+    ],
+    "go.useLanguageServer": true,
+    "gopls": {
+        "ui.semanticTokens": true
+    },
+}

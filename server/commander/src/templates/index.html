@@ -1,0 +1,1811 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Pico Control</title>
+  <style>
+    :root {
+      --bg: #f5f5f0;
+      --card: #fff;
+      --inner: #f8f8f5;
+      --joy: #f0efe8;
+      --border: #ddd;
+      --border2: #eee;
+      --text: #1a1a1a;
+      --muted: #888;
+      --sub: #666;
+      --btn: #fff;
+      --btn-h: #f5f5f0;
+      --in: #fafafa;
+      --in-f: #fff;
+      --act-bg: #eaf3de;
+      --act-b: #52a84a;
+      --act-c: #2d6e25;
+      --led-bg: #fef9e0;
+      --led-b: #c9a800;
+      --led-c: #7a6000;
+      --badge: #e8f0fb;
+      --badge-c: #2d5fa8;
+      --log: #1a1a1a;
+      --log-ts: #555;
+      --err-bg: #fdf0ee;
+      --err-b: #c0392b;
+      --err-c: #c0392b;
+      --err-h: #fad7d2;
+    }
+
+    @media(prefers-color-scheme:dark) {
+      :root {
+        --bg: #111110;
+        --card: #1c1c1a;
+        --inner: #252522;
+        --joy: #252522;
+        --border: #333;
+        --border2: #2e2e2b;
+        --text: #e8e8e4;
+        --muted: #666;
+        --sub: #888;
+        --btn: #1c1c1a;
+        --btn-h: #252522;
+        --in: #252522;
+        --in-f: #2e2e2b;
+        --act-bg: #1a2e14;
+        --act-b: #52a84a;
+        --act-c: #7ec87e;
+        --led-bg: #2e2600;
+        --led-b: #c9a800;
+        --led-c: #f5c400;
+        --badge: #1a2340;
+        --badge-c: #7eb8e8;
+        --log: #0d0d0c;
+        --log-ts: #444;
+        --err-bg: #2e1414;
+        --err-b: #c0392b;
+        --err-c: #e87e7e;
+        --err-h: #3e1a1a;
+      }
+    }
+
+    [data-theme=light] {
+      --bg: #f5f5f0;
+      --card: #fff;
+      --inner: #f8f8f5;
+      --joy: #f0efe8;
+      --border: #ddd;
+      --border2: #eee;
+      --text: #1a1a1a;
+      --muted: #888;
+      --sub: #666;
+      --btn: #fff;
+      --btn-h: #f5f5f0;
+      --in: #fafafa;
+      --in-f: #fff;
+      --act-bg: #eaf3de;
+      --act-b: #52a84a;
+      --act-c: #2d6e25;
+      --led-bg: #fef9e0;
+      --led-b: #c9a800;
+      --led-c: #7a6000;
+      --badge: #e8f0fb;
+      --badge-c: #2d5fa8;
+      --log: #1a1a1a;
+      --log-ts: #555;
+      --err-bg: #fdf0ee;
+      --err-b: #c0392b;
+      --err-c: #c0392b;
+      --err-h: #fad7d2;
+    }
+
+    [data-theme=dark] {
+      --bg: #111110;
+      --card: #1c1c1a;
+      --inner: #252522;
+      --joy: #252522;
+      --border: #333;
+      --border2: #2e2e2b;
+      --text: #e8e8e4;
+      --muted: #666;
+      --sub: #888;
+      --btn: #1c1c1a;
+      --btn-h: #252522;
+      --in: #252522;
+      --in-f: #2e2e2b;
+      --act-bg: #1a2e14;
+      --act-b: #52a84a;
+      --act-c: #7ec87e;
+      --led-bg: #2e2600;
+      --led-b: #c9a800;
+      --led-c: #f5c400;
+      --badge: #1a2340;
+      --badge-c: #7eb8e8;
+      --log: #0d0d0c;
+      --log-ts: #444;
+      --err-bg: #2e1414;
+      --err-b: #c0392b;
+      --err-c: #e87e7e;
+      --err-h: #3e1a1a;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 1rem;
+      transition: background .2s, color .2s
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      gap: 8px
+    }
+
+    h1 {
+      font-size: 17px;
+      font-weight: 500;
+      white-space: nowrap
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: .75rem
+    }
+
+    @media(min-width:640px) {
+      .grid {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .c-ws {
+        grid-column: 1;
+        grid-row: 1/3
+      }
+
+      .c-sys {
+        grid-column: 2;
+        grid-row: 1/3
+      }
+
+      .c-full {
+        grid-column: 1/-1
+      }
+    }
+
+    .card {
+      background: var(--card);
+      border: .5px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.125rem
+    }
+
+    .card-title {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: .65rem;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      display: flex;
+      align-items: center;
+      justify-content: space-between
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: .65rem
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      flex-shrink: 0;
+      transition: background .2s
+    }
+
+    .dot.on {
+      background: #52a84a
+    }
+
+    .status {
+      font-size: 13px;
+      color: var(--sub)
+    }
+
+    input[type=text] {
+      width: 100%;
+      padding: 7px 10px;
+      border: .5px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--text);
+      background: var(--in);
+      outline: none;
+      margin-bottom: 7px
+    }
+
+    input[type=text]:focus {
+      border-color: var(--act-b);
+      background: var(--in-f)
+    }
+
+    select {
+      width: 100%;
+      padding: 7px 10px;
+      border: .5px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--text);
+      background: var(--in);
+      outline: none;
+      margin-bottom: 7px
+    }
+
+    select:focus {
+      border-color: var(--act-b);
+      background: var(--in-f)
+    }
+
+    button {
+      width: 100%;
+      padding: 9px;
+      border: .5px solid var(--border);
+      border-radius: 8px;
+      background: var(--btn);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      transition: background .15s
+    }
+
+    button:hover {
+      background: var(--btn-h)
+    }
+
+    button.active {
+      background: var(--act-bg);
+      border-color: var(--act-b);
+      color: var(--act-c)
+    }
+
+    button.danger {
+      background: var(--err-bg);
+      border-color: var(--err-b);
+      color: var(--err-c)
+    }
+
+    button.danger:hover {
+      background: var(--err-h)
+    }
+
+    button:disabled {
+      opacity: .45;
+      cursor: not-allowed
+    }
+
+    input:disabled {
+      opacity: .45;
+      cursor: not-allowed
+    }
+
+    .theme-btn {
+      width: auto;
+      padding: 6px 12px;
+      font-size: 13px
+    }
+
+    .btn-sm {
+      width: auto;
+      padding: 6px 14px;
+      font-size: 12px
+    }
+
+    .btn-xs {
+      padding: 3px 10px;
+      font-size: 11px;
+      width: auto;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--muted)
+    }
+
+    .btn-xs:hover {
+      background: var(--btn-h);
+      color: var(--text)
+    }
+
+    .g2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px
+    }
+
+    .lg4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin-bottom: .5rem
+    }
+
+    .dir-btn {
+      padding: 7px 4px;
+      font-size: 11px
+    }
+
+    .motor-mode-toggle {
+      display: flex;
+      gap: 6px;
+      margin-bottom: .55rem
+    }
+
+    .motor-mode-toggle button {
+      padding: 5px 4px;
+      font-size: 11px;
+      flex: 1;
+      width: auto
+    }
+
+    .mjoy-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .5rem
+    }
+
+    .mjoy {
+      position: relative;
+      width: 76px;
+      height: 160px;
+      border-radius: 38px;
+      background: var(--joy);
+      border: 1.5px solid var(--border);
+      touch-action: none;
+      user-select: none;
+      cursor: grab;
+      overflow: hidden
+    }
+
+    .mjoy:active {
+      cursor: grabbing
+    }
+
+    .mjoy-label {
+      position: absolute;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 9px;
+      letter-spacing: .06em;
+      font-weight: 600;
+      color: var(--muted);
+      pointer-events: none
+    }
+
+    .mjoy-label-top {
+      top: 9px
+    }
+
+    .mjoy-label-bottom {
+      bottom: 9px
+    }
+
+    .mjoy-center-line {
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      top: 50%;
+      height: 1px;
+      background: var(--border2);
+      transform: translateY(-50%);
+      pointer-events: none
+    }
+
+    .mjoy-fill {
+      position: absolute;
+      left: 50%;
+      width: 6px;
+      top: 50%;
+      height: 0;
+      background: var(--border);
+      border-radius: 3px;
+      transform: translateX(-50%);
+      pointer-events: none;
+      transition: background .15s
+    }
+
+    .mjoy-fill.fwd {
+      background: var(--act-b)
+    }
+
+    .mjoy-fill.rev {
+      background: var(--err-b)
+    }
+
+    .mjoy-knob {
+      position: absolute;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--card);
+      border: 2px solid var(--border);
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, .18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      color: var(--muted);
+      transition: border-color .15s, color .15s
+    }
+
+    .mjoy-knob.fwd {
+      border-color: var(--act-b);
+      color: var(--act-c)
+    }
+
+    .mjoy-knob.rev {
+      border-color: var(--err-b);
+      color: var(--err-c)
+    }
+
+    .mjoy-info {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 12px;
+      border-radius: 6px;
+      background: var(--badge);
+      color: var(--badge-c);
+      transition: background .15s, color .15s
+    }
+
+    .mjoy-info.fwd {
+      background: var(--act-bg);
+      color: var(--act-c)
+    }
+
+    .mjoy-info.rev {
+      background: var(--err-bg);
+      color: var(--err-c)
+    }
+
+    .man-lbl {
+      font-size: 10px;
+      color: var(--muted);
+      margin-bottom: 2px;
+      display: block;
+      text-align: center
+    }
+
+    .man-fields {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(44px, 1fr));
+      gap: 6px;
+      margin-bottom: 8px
+    }
+
+    .man-fields input {
+      padding: 6px 2px;
+      font-size: 12px;
+      text-align: center;
+      margin-bottom: 0
+    }
+
+    .man-fields input[type=number]::-webkit-outer-spin-button,
+    .man-fields input[type=number]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0
+    }
+
+    .man-fields input[type=number] {
+      -moz-appearance: textfield
+    }
+
+    .man-hex {
+      margin-top: 4px;
+      font-family: "Courier New", monospace;
+      font-size: 11px;
+      color: var(--sub);
+      word-break: break-all
+    }
+
+    .man-hist-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 220px;
+      overflow-y: auto
+    }
+
+    .man-hist-empty {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      padding: 10px 0
+    }
+
+    .man-hist-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: var(--inner);
+      border: .5px solid var(--border2);
+      border-radius: 8px;
+      padding: 6px 8px
+    }
+
+    .man-hist-main {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0
+    }
+
+    .man-hist-hex {
+      font-family: "Courier New", monospace;
+      font-size: 11px;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis
+    }
+
+    .man-hist-ts {
+      font-size: 10px;
+      color: var(--muted)
+    }
+
+    .man-hist-reuse {
+      width: auto;
+      padding: 5px 10px;
+      font-size: 11px;
+      flex-shrink: 0
+    }
+
+    @media(max-width:420px) {
+      body {
+        padding: .7rem
+      }
+
+      .card {
+        padding: .8rem .9rem
+      }
+
+      .grid {
+        gap: .6rem
+      }
+    }
+
+    .mcard {
+      background: var(--inner);
+      border-radius: 8px;
+      padding: .6rem .75rem;
+      border: .5px solid var(--border2);
+      width: 100%;
+      margin-top: .6rem
+    }
+
+    .mcard .lbl {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 3px
+    }
+
+    .mcard .spd {
+      font-size: 18px;
+      font-weight: 500
+    }
+
+    .mcard .dir {
+      display: inline-block;
+      margin-top: 3px;
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 6px;
+      background: var(--badge);
+      color: var(--badge-c)
+    }
+
+    .mcard .row2 {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 4px
+    }
+
+    .mgrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 8px
+    }
+
+    .adc-hdr {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: .65rem
+    }
+
+    .lg3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 7px;
+      margin-bottom: .65rem
+    }
+
+    .led-btn {
+      padding: 9px 6px;
+      font-size: 13px
+    }
+
+    .led-btn.active {
+      background: var(--led-bg);
+      border-color: var(--led-b);
+      color: var(--led-c)
+    }
+
+    .blink-row {
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .blink-row label {
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap
+    }
+
+    input[type=range] {
+      flex: 1;
+      accent-color: #52a84a
+    }
+
+    input[type=color] {
+      width: 36px;
+      height: 28px;
+      padding: 0;
+      border: .5px solid var(--border);
+      border-radius: 6px;
+      background: none;
+      cursor: pointer;
+      flex-shrink: 0
+    }
+
+    .blink-v {
+      font-size: 12px;
+      min-width: 28px;
+      text-align: right
+    }
+
+    .led-ind {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: var(--border);
+      display: inline-block;
+      margin-right: 5px;
+      vertical-align: middle
+    }
+
+    .led-ind.on {
+      background: #f5c400;
+      box-shadow: 0 0 6px #f5c400
+    }
+
+    /* ── RGB section ── */
+    .rgb-section {
+      margin-top: .75rem;
+      padding-top: .75rem;
+      border-top: .5px solid var(--border2)
+    }
+
+    .rgb-title {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin-bottom: .5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between
+    }
+
+    .rgb-preview {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border);
+      flex-shrink: 0;
+      background: #52a84a;
+      transition: background .15s
+    }
+
+    /* init badge */
+    .rgb-badge {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: var(--badge);
+      color: var(--badge-c);
+      letter-spacing: .02em
+    }
+
+    .rgb-badge.ready {
+      background: var(--act-bg);
+      color: var(--act-c)
+    }
+
+    .rgb-badge.off {
+      background: var(--err-bg);
+      color: var(--err-c)
+    }
+
+    .log-hdr {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: .6rem
+    }
+
+    .log-hdr .card-title {
+      margin-bottom: 0
+    }
+
+    .log-wrap {
+      position: relative
+    }
+
+    .log {
+      background: var(--log);
+      border-radius: 8px;
+      padding: .65rem .9rem;
+      font-family: "Courier New", monospace;
+      font-size: 12px;
+      color: #aaa;
+      height: 130px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      white-space: pre;
+    }
+
+    .log .ts {
+      color: var(--log-ts)
+    }
+
+    .log .tx {
+      color: #7ec87e
+    }
+
+    .log .rx {
+      color: #7eb8e8
+    }
+
+    .log .info {
+      color: #e8c87e
+    }
+
+    .log .err {
+      color: #e87e7e
+    }
+
+    .log-jump {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 4px 14px;
+      font-size: 11px;
+      width: auto;
+      border-radius: 20px;
+      background: rgba(82, 168, 74, .9);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      display: none;
+      white-space: nowrap
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="topbar">
+    <h1>Pico Control Panel</h1>
+    <button class="theme-btn" onclick="toggleTheme()" id="theme-btn">🌙 Dark</button>
+  </div>
+
+  <div class="grid">
+
+    <!-- WS -->
+    <div class="card c-ws">
+      <p class="card-title">WebSocket</p>
+      <div class="row">
+        <div class="dot" id="ws-dot"></div>
+        <span class="status" id="ws-lbl">Disconnected</span>
+      </div>
+      <input type="text" id="ws-url" value="ws://{{.Host}}/commander_vendor" placeholder="WebSocket URL" />
+      <input type="text" id="ws-tok" value="TOKEN_A" placeholder="Token" />
+      <button id="ws-btn" onclick="toggleWS()">⚡ Connect</button>
+    </div>
+
+    <!-- System -->
+    <div class="card c-sys">
+      <p class="card-title">System Control</p>
+      <div class="g2">
+        <button class="danger" style="font-size:12px;padding:9px 6px" onclick="reboot()">🔄 REBOOT</button>
+        <button class="danger" style="font-size:12px;padding:9px 6px" onclick="reset_usb(1)">🔧 RESET TO USB
+          PICOBOOT</button>
+      </div>
+    </div>
+
+    <!-- Motor Init -->
+    <div class="card c-full">
+      <p class="card-title">Motor Init</p>
+      <select id="motor-driver" onchange="renderMotorInitFields()"></select>
+      <div class="man-fields" id="motor-pin-fields"></div>
+      <button id="motor-init-btn" onclick="sendMotorInit()">➕ Init Motor</button>
+    </div>
+
+    <!-- Motors -->
+    <div class="card c-full">
+      <p class="card-title">Motors</p>
+      <div id="motors-list">
+        <div class="man-hist-empty" id="motors-empty">Belum ada motor aktif</div>
+      </div>
+    </div>
+
+    <!-- ADC -->
+    <div class="card c-full">
+      <div class="adc-hdr">
+        <p class="card-title" style="margin:0">ADC</p>
+        <div class="row" style="margin:0;gap:10px">
+          <div class="dot" id="adc-dot"></div>
+          <span class="status" id="adc-lbl">ADC DMA Stopped</span>
+          <button class="btn-sm" id="adc-btn" onclick="toggleADC()">▶ Start</button>
+        </div>
+      </div>
+      <div class="mgrid">
+        <div class="mcard">
+          <div class="lbl">CH0 · GPIO26</div>
+          <div class="spd"><span id="adc-0">—</span></div>
+        </div>
+        <div class="mcard">
+          <div class="lbl">CH1 · GPIO27</div>
+          <div class="spd"><span id="adc-1">—</span></div>
+        </div>
+        <div class="mcard">
+          <div class="lbl">CH2 · GPIO28</div>
+          <div class="spd"><span id="adc-2">—</span></div>
+        </div>
+        <div class="mcard">
+          <div class="lbl">CH4 · Temp</div>
+          <div class="spd"><span id="adc-4">—</span></div><span class="dir" id="adc-4t"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- LED -->
+    <div class="card c-full">
+      <p class="card-title"><span class="led-ind" id="led-ind"></span>Default LED</p>
+
+      <!-- cmd=21: LED mode -->
+      <div class="lg3">
+        <button class="led-btn" id="led-0" onclick="setLED(0)">OFF</button>
+        <button class="led-btn" id="led-1" onclick="setLED(1)">ON</button>
+        <button class="led-btn" id="led-2" onclick="setLED(2)">Blink</button>
+      </div>
+      <div class="blink-row">
+        <label>Blink delay</label>
+        <input type="range" id="blink" min="1" max="255" value="10"
+          oninput="$('blink-v').textContent=this.value; if(ledMode===2) setLED(2);" />
+        <span class="blink-v" id="blink-v">10</span>
+      </div>
+
+      <!-- cmd=22: RGB -->
+      <div class="rgb-section">
+        <div class="rgb-title">
+          <span>RGB · WS2812</span>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span class="rgb-badge off" id="rgb-badge">Deinit</span>
+            <div class="rgb-preview" id="rgb-preview"></div>
+          </div>
+        </div>
+
+        <!-- arg0=0: Init / Deinit -->
+        <div class="g2" style="margin-bottom:.5rem">
+          <button id="rgb-init-btn" onclick="sendRgbInit(true)" style="font-size:12px;padding:8px 6px">⚙ Init</button>
+          <button id="rgb-deinit-btn" onclick="sendRgbInit(false)" style="font-size:12px;padding:8px 6px">✕
+            Deinit</button>
+        </div>
+
+        <!-- arg0=1: Set color -->
+        <div class="blink-row" style="margin-bottom:.4rem">
+          <label>Color</label>
+          <input type="color" id="rgb-pick" value="#52a84a" oninput="onRgbPick()" />
+          <span class="blink-v" id="rgb-v" style="min-width:64px;font-family:monospace">#52A84A</span>
+          <button class="btn-sm" id="rgb-send" onclick="sendRgbColor()">Send</button>
+        </div>
+        <div class="blink-row" style="margin-top:.3rem">
+          <label style="min-width:14px">R</label>
+          <input type="range" id="rgb-r" min="0" max="255" value="82" oninput="onRgbSlider()" />
+          <span class="blink-v" id="rgb-rv">82</span>
+        </div>
+        <div class="blink-row" style="margin-top:.3rem">
+          <label style="min-width:14px">G</label>
+          <input type="range" id="rgb-g" min="0" max="255" value="168" oninput="onRgbSlider()" />
+          <span class="blink-v" id="rgb-gv">168</span>
+        </div>
+        <div class="blink-row" style="margin-top:.3rem">
+          <label style="min-width:14px">B</label>
+          <input type="range" id="rgb-b" min="0" max="255" value="74" oninput="onRgbSlider()" />
+          <span class="blink-v" id="rgb-bv">74</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Manual Command -->
+    <div class="card c-full">
+      <p class="card-title">Manual Command</p>
+
+      <select id="man-preset" onchange="applyManPreset()">
+        <option value="">— Preset (optional, fills cmd) —</option>
+      </select>
+
+      <div class="man-fields">
+        <div>
+          <label class="man-lbl">CID</label>
+          <input type="number" id="man-cid" value="1" min="0" max="255" step="1" oninput="updateManHex()"
+            onblur="normalizeManField('man-cid')" />
+        </div>
+        <div>
+          <label class="man-lbl">CMD</label>
+          <input type="number" id="man-cmd" value="0" min="0" max="255" step="1" oninput="updateManHex()"
+            onblur="normalizeManField('man-cmd')" />
+        </div>
+        <div>
+          <label class="man-lbl">arg0</label>
+          <input type="number" id="man-arg0" value="0" min="0" max="255" step="1" oninput="updateManHex()"
+            onblur="normalizeManField('man-arg0')" />
+        </div>
+        <div>
+          <label class="man-lbl">arg1</label>
+          <input type="number" id="man-arg1" value="0" min="0" max="255" step="1" oninput="updateManHex()"
+            onblur="normalizeManField('man-arg1')" />
+        </div>
+        <div>
+          <label class="man-lbl">arg2</label>
+          <input type="number" id="man-arg2" value="0" min="0" max="255" step="1" oninput="updateManHex()"
+            onblur="normalizeManField('man-arg2')" />
+        </div>
+        <div>
+          <label class="man-lbl">arg3</label>
+          <input type="number" id="man-arg3" value="0" min="0" max="255" step="1" oninput="updateManHex()"
+            onblur="normalizeManField('man-arg3')" />
+        </div>
+        <div>
+          <label class="man-lbl">arg4</label>
+          <input type="number" id="man-arg4" value="0" min="0" max="255" step="1" oninput="updateManHex()"
+            onblur="normalizeManField('man-arg4')" />
+        </div>
+        <div>
+          <label class="man-lbl">arg5</label>
+          <input type="number" id="man-arg5" value="0" min="0" max="255" step="1" oninput="updateManHex()"
+            onblur="normalizeManField('man-arg5')" />
+        </div>
+      </div>
+
+      <button id="man-send" onclick="sendManualCmd()">📤 Send Packet</button>
+      <div class="man-hex" id="man-hex"></div>
+    </div>
+
+    <!-- Manual command history -->
+    <div class="card c-full">
+      <div class="log-hdr">
+        <p class="card-title" style="margin:0">Command History</p>
+        <button class="btn-xs" onclick="clearManHistory()">Clear</button>
+      </div>
+      <div class="man-hist-wrap" id="man-hist">
+        <div class="man-hist-empty">No commands sent yet</div>
+      </div>
+    </div>
+
+    <!-- Log -->
+    <div class="card c-full">
+      <div class="log-hdr">
+        <p class="card-title" style="margin:0">Packet log</p>
+        <button class="btn-xs" onclick="clearLog()">Clear</button>
+      </div>
+      <div class="log-wrap">
+        <div class="log" id="log" onscroll="onScroll()"></div>
+        <button class="log-jump" id="log-jump" onclick="jumpLog()">↓ Latest</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    'use strict';
+
+    const $ = id => document.getElementById(id);
+    const cls = (id, c) => $(id).className = c;
+
+    // ── STATE ─────────────────────────────────
+    let ws = null, clientId = 1;
+    let adcOn = false, ledMode = 0;
+    let rgbInited = false; // tracks init state locally
+
+    const adcState = { 0: null, 1: null, 2: null, 4: null };
+
+    const isWS = () => ws?.readyState === 1;
+
+    function setEnabled(en) {
+      ['led-0', 'led-1', 'led-2', 'adc-btn',
+        'rgb-init-btn', 'rgb-deinit-btn',
+        'rgb-pick', 'rgb-r', 'rgb-g', 'rgb-b', 'rgb-send',
+        'man-send', 'motor-init-btn'
+      ].forEach(id => $(id).disabled = !en);
+      $('motors-list').style.opacity = en ? '1' : '.4';
+      $('motors-list').style.pointerEvents = en ? '' : 'none';
+    }
+
+    // ── BINARY HELPERS ────────────────────────
+    const rawToV = raw => (raw / 4095) * 3.3;
+    const vToTemp = v => 27 - (v - 0.706) / 0.001721;
+
+    function parseBinary(buf) {
+      const dv = new DataView(buf);
+      const status = dv.getUint8(0);
+      switch (status) {
+        case 255:
+          clientId = dv.getUint8(1);
+          log(`RX ${fmtBytes(dv, 0, 7)}`, 'rx');
+          for (let off = 7; off < dv.byteLength; off += 7) dispatchPacket(dv, off);
+          break;
+        case 0:
+          dispatchPacket(dv, 0);
+          break;
+        default:
+          log(`RX ${fmtBytes(dv, 0, 7)}`, 'err');
+      }
+    }
+
+    function fmtBytes(dv, off, len) {
+      const arr = [];
+      for (let i = 0; i < len && off + i < dv.byteLength; i++)
+        arr.push('0x' + dv.getUint8(off + i).toString(16).toUpperCase().padStart(2, '0'));
+      return `[${arr.join(', ')}]`;
+    }
+
+    function dispatchPacket(dv, off) {
+      const cmd = dv.getUint8(off + 1);
+      const d0 = dv.getUint8(off + 2);
+      const d1 = dv.getUint8(off + 3);
+      const d2 = dv.getUint8(off + 4);
+      const d3 = dv.getUint8(off + 5);
+      log(`RX ${fmtBytes(dv, off, 7)}`, 'rx');
+
+      // ── Motor (cmd=61 generic, response cmd = 61 + motor_id) ──
+      if (cmd === 61) { handleMotorAck(); return; }
+      if (cmd > 61 && cmd < 61 + 32) { handleMotorUpdate(cmd - 61, d0, d1, d2, d3); return; }
+
+      switch (cmd) {
+        case 21: handleLED(d0, d1, d2); break;
+        case 22: handleRGB(d0, d1, d2, d3); break;
+        case 41: handleADCDMA(d0); break;
+        case 42: handleADC(0, d0, d1); break;
+        case 43: handleADC(1, d0, d1); break;
+        case 44: handleADC(2, d0, d1); break;
+        case 45: handleADC(3, d0, d1); break;
+        case 46: handleADC(4, d0, d1); break;
+        default: log(`RX unknown cmd=${cmd}`, 'info');
+      }
+    }
+
+    // ── CMD=21 LED ────────────────────────────
+    function handleLED(d0, d1, d2) {
+      ledMode = d0;
+      const step = Math.round((d1 | (d2 << 8)) / 100);
+      syncLedUI(d0);
+      if (d0 === 2) { $('blink').value = step; $('blink-v').textContent = step; }
+    }
+
+    function setLED(mode) {
+      if (!isWS()) { log('Not connected', 'err'); return; }
+      ledMode = mode;
+      const delay = mode === 2 ? +$('blink').value : 0;
+      syncLedUI(mode);
+      ws.send(pkt(clientId, 21, mode, delay & 0xFF).buffer);
+      log(`TX LED ${['OFF', 'ON', `BLINK delay=${delay}ms`][mode]}`, 'tx');
+    }
+
+    function syncLedUI(mode) {
+      [0, 1, 2].forEach(i => cls('led-' + i, 'led-btn'));
+      cls('led-' + mode, 'led-btn active');
+      $('led-ind').className = 'led-ind' + (mode >= 1 ? ' on' : '');
+    }
+
+    // ── CMD=22 RGB ────────────────────────────
+    //
+    // arg0=0 → init/deinit control
+    //   arg1=1 → init (true)
+    //   arg1=0 → deinit (false)
+    //
+    // arg0=1 → set color
+    //   arg1=R, arg2=G, arg3=B
+
+    function sendRgbInit(initVal) {
+      // initVal: true=init, false=deinit
+      if (!isWS()) { log('Not connected', 'err'); return; }
+      // pkt: [clientId, 22, 0, initVal?1:0, 0, 0, 0, 0]
+      ws.send(pkt(clientId, 22, 0, initVal ? 1 : 0).buffer);
+      log(`TX RGB cmd=22 arg0=0 arg1=${initVal ? 'true(init)' : 'false(deinit)'}`, 'tx');
+      // optimistic UI update
+      rgbInited = initVal;
+      syncRgbBadge(initVal);
+    }
+
+    function sendRgbColor() {
+      if (!isWS()) { log('Not connected', 'err'); return; }
+      const r = +$('rgb-r').value;
+      const g = +$('rgb-g').value;
+      const b = +$('rgb-b').value;
+      // pkt: [clientId, 22, 1, r, g, b, 0, 0]
+      ws.send(pkt(clientId, 22, 1, r, g, b).buffer);
+      log(`TX RGB cmd=22 arg0=1 r=${r} g=${g} b=${b}`, 'tx');
+    }
+
+    // RX handler cmd=22
+    // d0=status(1=inited/0=deinited), d1=R, d2=G, d3=B, d4=W
+    function handleRGB(d0, d1, d2, d3) {
+      // sync init badge
+      rgbInited = d0 === 1;
+      syncRgbBadge(rgbInited);
+
+      // sync RGB color
+      const hex = '#' + [d1, d2, d3].map(v => v.toString(16).padStart(2, '0')).join('').toUpperCase();
+      $('rgb-pick').value = hex;
+      syncRgbUI(d1, d2, d3, hex);
+    }
+
+    function syncRgbBadge(inited) {
+      const badge = $('rgb-badge');
+      if (inited) {
+        badge.textContent = 'Ready';
+        badge.className = 'rgb-badge ready';
+        $('rgb-init-btn').className = 'active';
+        $('rgb-deinit-btn').className = '';
+      } else {
+        badge.textContent = 'Deinit';
+        badge.className = 'rgb-badge off';
+        $('rgb-init-btn').className = '';
+        $('rgb-deinit-btn').className = 'active';
+      }
+    }
+
+    function onRgbPick() {
+      const hex = $('rgb-pick').value;
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      syncRgbUI(r, g, b, hex);
+    }
+
+    function onRgbSlider() {
+      const r = +$('rgb-r').value, g = +$('rgb-g').value, b = +$('rgb-b').value;
+      const hex = '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('').toUpperCase();
+      $('rgb-pick').value = hex;
+      syncRgbUI(r, g, b, hex);
+    }
+
+    function syncRgbUI(r, g, b, hex) {
+      $('rgb-r').value = r; $('rgb-rv').textContent = r;
+      $('rgb-g').value = g; $('rgb-gv').textContent = g;
+      $('rgb-b').value = b; $('rgb-bv').textContent = b;
+      $('rgb-v').textContent = hex.toUpperCase();
+      $('rgb-preview').style.background = hex;
+    }
+
+    // ── ADC ───────────────────────────────────
+    function handleADCDMA(state) { syncAdcUI(state === 1); }
+
+    function handleADC(ch, d0, d1) {
+      const raw = d0 | (d1 << 8), v = rawToV(raw);
+      if (ch === 4)
+        adcState[4] = { v, t: vToTemp(v) };
+      else if (ch <= 2)
+        adcState[ch] = { v };
+      if (adcOn) renderADC();
+    }
+
+    function renderADC() {
+      [0, 1, 2].forEach(i => {
+        $('adc-' + i).textContent = adcState[i] != null ? adcState[i].v.toFixed(3) + 'V' : '—';
+      });
+      if (adcState[4] != null) {
+        $('adc-4').textContent = adcState[4].v.toFixed(3) + 'V';
+        $('adc-4t').textContent = adcState[4].t.toFixed(1) + '°C';
+      } else { $('adc-4').textContent = '—'; $('adc-4t').textContent = ''; }
+    }
+
+    function resetADC() { [0, 1, 2, 4].forEach(i => adcState[i] = null); renderADC(); }
+
+    function syncAdcUI(on) {
+      adcOn = on;
+      $('adc-dot').className = 'dot' + (on ? ' on' : '');
+      $('adc-lbl').textContent = on ? 'ADC DMA Running' : 'ADC DMA Stopped';
+      $('adc-btn').textContent = on ? '■ Stop' : '▶ Start';
+      $('adc-btn').className = on ? 'btn-sm active' : 'btn-sm';
+    }
+
+    function toggleADC() {
+      if (!isWS()) { log('Not connected', 'err'); return; }
+      const next = !adcOn; adcOn = next;
+      ws.send(pkt(clientId, 41, next ? 1 : 0).buffer);
+      log(`TX ADC DMA ${next ? 'START' : 'STOP'}`, 'tx');
+      syncAdcUI(next);
+    }
+
+    // ── REBOOT ────────────────────────────────
+    function reboot() {
+      if (!isWS()) { log('Not connected', 'err'); return; }
+      if (!confirm("Reboot?")) return;
+      ws.send(pkt(clientId, 1).buffer);
+      log(`TX reboot`, 'tx');
+    }
+
+    // ── RESET_USB ────────────────────────────────
+    function reset_usb(mode) {
+      if (!isWS()) { log('Not connected', 'err'); return; }
+      switch (mode) {
+        case 0:
+          if (!confirm("Reset to USB Mass Storage Interface & USB PICOBOOT Interface")) return;
+          break
+        case 1:
+          if (!confirm("Reset to USB PICOBOOT Interface")) return;
+          break
+        case 2:
+          if (!confirm("Reset to USB Mass Storage Interface")) return;
+          break
+      }
+      ws.send(pkt(clientId, 2, mode).buffer);
+      log(`TX bootsel`, 'tx');
+    }
+
+    // ── MOTOR (generic, cmd=61) ────────────────
+    // sub-cmd (arg0): 0=INIT 1=DEINIT 2=SET_DIRECTION 3=SET_SPEED
+    // INIT    : [cid,61,0,driverType,pin0,pin1,pin2,pin3]
+    // DEINIT  : [cid,61,1,motorId,0,0,0,0]
+    // SET_DIR : [cid,61,2,motorId,dir,0,0,0]
+    // SET_SPD : [cid,61,3,motorId,speed,0,0,0]
+    // RX ack  : status,cmd(=61+motorId),motorId,active,direction,speed,0
+    //           (cmd stays 61 with no offset on error, e.g. slot full)
+
+    const DIR_LABEL = { 0: 'Free', 1: 'Forward', 2: 'Reverse', 3: 'Brake' };
+
+    const DRIVER_TYPES = [
+      { val: 0, name: 'BTS7960', fields: ['R_EN', 'RPWM', 'L_EN', 'LPWM'] },
+      { val: 1, name: 'DRV8833', fields: ['STBY', 'IN1', 'IN2'] },
+      { val: 2, name: 'TB6612FNG', fields: ['STBY', 'IN1', 'IN2', 'PWM'] },
+      { val: 3, name: 'ZK5AD', fields: ['PWM_A', 'PWM_B'] }
+    ];
+
+    const motors = {}; // motorId -> {active, direction, speed}
+    const motorSpeedTs = {}; // per-motor throttle for speed slider
+    const motorMode = {}; // motorId -> 'buttons' | 'joystick'
+    const mjoyState = {}; // motorId -> {dragging, y, iv, lastDir}
+    const dragLock = {}; // motorId -> true while the speed slider is being dragged
+    const MJOY_THRESH = 0.08; // deadzone below which direction counts as Free
+
+    // While a joystick or slider is actively being dragged, a full renderMotors()
+    // rebuild would tear down and recreate the element mid-gesture — losing pointer
+    // capture and snapping the knob back to center. So we skip re-rendering until
+    // the interaction ends.
+    function isMotorLocked(id) {
+      return !!(mjoyState[id] && mjoyState[id].dragging) || !!dragLock[id];
+    }
+    function anyMotorLocked() {
+      return Object.keys(motors).some(isMotorLocked);
+    }
+
+    function motorSliderDown(id) { dragLock[id] = true; }
+    function motorSliderUp(id) { dragLock[id] = false; renderMotors(); }
+
+    function initMotorDriverSelect() {
+      const sel = $('motor-driver');
+      DRIVER_TYPES.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d.val; opt.textContent = d.name;
+        sel.appendChild(opt);
+      });
+      renderMotorInitFields();
+    }
+
+    function renderMotorInitFields() {
+      const d = DRIVER_TYPES[+$('motor-driver').value];
+      $('motor-pin-fields').innerHTML = d.fields.map((f, i) => `
+        <div>
+          <label class="man-lbl">${f}</label>
+          <input type="number" id="motor-pin-${i}" value="0" min="0" max="255" step="1" />
+        </div>
+      `).join('');
+    }
+
+    function sendMotorInit() {
+      if (!isWS()) { log('Not connected', 'err'); return; }
+      const d = DRIVER_TYPES[+$('motor-driver').value];
+      const pins = [0, 0, 0, 0];
+      d.fields.forEach((f, i) => { pins[i] = clampByte($('motor-pin-' + i).value); });
+      ws.send(pkt(clientId, 61, 0, d.val, pins[0], pins[1], pins[2], pins[3]).buffer);
+      log(`TX motor INIT driver=${d.name}(${d.val}) pins=[${pins.join(', ')}]`, 'tx');
+    }
+
+    function sendMotorDeinit(motorId) {
+      if (!isWS()) { log('Not connected', 'err'); return; }
+      ws.send(pkt(clientId, 61, 1, motorId).buffer);
+      log(`TX motor DEINIT id=${motorId}`, 'tx');
+    }
+
+    function sendMotorDirection(motorId, dir) {
+      if (!isWS()) { log('Not connected', 'err'); return; }
+      ws.send(pkt(clientId, 61, 2, motorId, dir).buffer);
+      log(`TX motor SET_DIR id=${motorId} dir=${DIR_LABEL[dir]}`, 'tx');
+    }
+
+    function sendMotorSpeed(motorId, speed) {
+      if (!isWS()) return;
+      ws.send(pkt(clientId, 61, 3, motorId, speed).buffer);
+      log(`TX motor SET_SPEED id=${motorId} speed=${speed}%`, 'tx');
+    }
+
+    // slider fires fast while dragging — throttle to ~80ms per motor like the old joystick loop
+    function onMotorSpeedInput(motorId, val) {
+      const speed = +val;
+      if (motors[motorId]) motors[motorId].speed = speed;
+      const card = $('motor-card-' + motorId);
+      if (card) card.querySelector('.blink-v').textContent = speed + '%';
+      const now = Date.now();
+      if (motorSpeedTs[motorId] && now - motorSpeedTs[motorId] < 80) return;
+      motorSpeedTs[motorId] = now;
+      sendMotorSpeed(motorId, speed);
+    }
+
+    // +1 / -1 step buttons next to the slider
+    function stepMotorSpeed(motorId, delta) {
+      const m = motors[motorId];
+      if (!m) return;
+      const speed = Math.max(0, Math.min(100, m.speed + delta));
+      if (speed === m.speed) return;
+      m.speed = speed;
+      const card = $('motor-card-' + motorId);
+      if (card) {
+        card.querySelector('input[type=range]').value = speed;
+        card.querySelector('.blink-v').textContent = speed + '%';
+      }
+      sendMotorSpeed(motorId, speed);
+    }
+
+    // ── Mode toggle (buttons vs joystick) ──────
+    function getMotorMode(id) { return motorMode[id] || 'buttons'; }
+
+    function setMotorMode(id, mode) {
+      motorMode[id] = mode;
+      if (mode !== 'joystick' && mjoyState[id] && mjoyState[id].iv) {
+        clearInterval(mjoyState[id].iv);
+        mjoyState[id].iv = null;
+        mjoyState[id].dragging = false;
+      }
+      renderMotors();
+    }
+
+    // ── Vertical joystick per motor (up=Forward, down=Reverse, center=Free) ──
+    // Direction is sent only when it changes; speed is sent continuously
+    // (every ~80ms) for as long as the knob is being dragged.
+    function mjoyVal(id) {
+      const st = mjoyState[id];
+      const y = (st && st.dragging) ? st.y : 0;
+      const speed = Math.round(Math.min(1, Math.abs(y)) * 100);
+      const dir = y > MJOY_THRESH ? 1 : y < -MJOY_THRESH ? 2 : 0;
+      return { speed, dir };
+    }
+
+    function mjoyApplyVisual(id, dyPx) {
+      const { speed, dir } = mjoyVal(id);
+      const knob = $('mjoy-knob-' + id), fill = $('mjoy-fill-' + id), arrow = $('mjoy-arrow-' + id), info = $('mjoy-info-' + id);
+      const cls = dir === 1 ? 'fwd' : dir === 2 ? 'rev' : '';
+      if (knob) {
+        knob.style.top = `calc(50% + ${dyPx}px)`;
+        knob.className = 'mjoy-knob' + (cls ? ' ' + cls : '');
+      }
+      if (fill) {
+        fill.className = 'mjoy-fill' + (cls ? ' ' + cls : '');
+        fill.style.top = dyPx < 0 ? `calc(50% + ${dyPx}px)` : '50%';
+        fill.style.height = Math.abs(dyPx) + 'px';
+      }
+      if (arrow) arrow.textContent = dir === 1 ? '▲' : dir === 2 ? '▼' : '●';
+      if (info) {
+        info.className = 'mjoy-info' + (cls ? ' ' + cls : '');
+        info.textContent = `${DIR_LABEL[dir]} · ${speed}%`;
+      }
+    }
+
+    function mjoyDn(e, id) {
+      if (!isWS()) { log('Not connected', 'err'); return; }
+      const el = $('mjoy-' + id);
+      el.setPointerCapture(e.pointerId);
+      mjoyState[id] = mjoyState[id] || {};
+      mjoyState[id].dragging = true;
+      mjoyState[id].y = 0;
+      mjoyMv(e, id);
+      if (!mjoyState[id].iv) mjoyState[id].iv = setInterval(() => mjoySend(id), 80);
+    }
+
+    function mjoyMv(e, id) {
+      const st = mjoyState[id];
+      if (!st || !st.dragging) return;
+      const el = $('mjoy-' + id), r = el.getBoundingClientRect();
+      const cy = r.top + r.height / 2, half = r.height / 2 - 22;
+      let dy = e.clientY - cy;
+      dy = Math.max(-half, Math.min(half, dy));
+      st.y = -(dy / half); // up = positive
+      mjoyApplyVisual(id, dy);
+    }
+
+    function mjoyUp(e, id) {
+      const st = mjoyState[id];
+      if (!st) return;
+      st.dragging = false;
+      st.y = 0;
+      if (st.iv) { clearInterval(st.iv); st.iv = null; }
+      mjoyApplyVisual(id, 0);
+      mjoySend(id); // final send: Free / 0%
+      renderMotors(); // sync anything that arrived while locked
+    }
+
+    function mjoySend(id) {
+      if (!isWS()) return;
+      const { speed, dir } = mjoyVal(id);
+      const st = mjoyState[id] = mjoyState[id] || {};
+      if (dir !== st.lastDir) {
+        sendMotorDirection(id, dir);
+        st.lastDir = dir;
+      }
+      sendMotorSpeed(id, speed); // sent continuously while dragging
+      if (motors[id]) { motors[id].direction = dir; motors[id].speed = speed; }
+    }
+
+    function handleMotorAck() {
+      // cmd came back as 61 with no motor-id offset → sub-command failed (e.g. no free slot / bad id)
+      log('RX motor ack tanpa id — kemungkinan gagal (slot penuh / id salah)', 'err');
+    }
+
+    function handleMotorUpdate(motorId, idByte, active, direction, speed) {
+      if (!active) {
+        delete motors[motorId];
+        renderMotors();
+        return;
+      }
+      motors[motorId] = motors[motorId] || {};
+      motors[motorId].direction = direction;
+      motors[motorId].speed = speed;
+      if (anyMotorLocked()) return; // avoid tearing down DOM mid-drag (causes the knob to jump to 0)
+      renderMotors();
+    }
+
+    function renderMotors() {
+      const wrap = $('motors-list');
+      const ids = Object.keys(motors);
+      if (!ids.length) {
+        wrap.innerHTML = '<div class="man-hist-empty" id="motors-empty">Belum ada motor aktif</div>';
+        return;
+      }
+      wrap.innerHTML = ids.map((id, idx) => {
+        const m = motors[id];
+        const mode = getMotorMode(id);
+        const dirCls = m.direction === 1 ? 'fwd' : m.direction === 2 ? 'rev' : '';
+        const controls = mode === 'joystick' ? `
+          <div class="mjoy-wrap">
+            <div class="mjoy" id="mjoy-${id}" onpointerdown="mjoyDn(event,${id})" onpointermove="mjoyMv(event,${id})" onpointerup="mjoyUp(event,${id})" onpointercancel="mjoyUp(event,${id})">
+              <div class="mjoy-label mjoy-label-top">MAJU</div>
+              <div class="mjoy-center-line"></div>
+              <div class="mjoy-fill" id="mjoy-fill-${id}"></div>
+              <div class="mjoy-knob" id="mjoy-knob-${id}"><span id="mjoy-arrow-${id}">●</span></div>
+              <div class="mjoy-label mjoy-label-bottom">MUNDUR</div>
+            </div>
+            <div class="mjoy-info${dirCls ? ' ' + dirCls : ''}" id="mjoy-info-${id}">${DIR_LABEL[m.direction]} · ${m.speed}%</div>
+          </div>` : `
+          <div class="lg4">
+            ${[0, 1, 2, 3].map(d => `<button class="dir-btn${m.direction === d ? ' active' : ''}" onclick="sendMotorDirection(${id},${d})">${DIR_LABEL[d]}</button>`).join('')}
+          </div>
+          <div class="blink-row">
+            <label>Speed</label>
+            <button class="btn-xs" style="border:.5px solid var(--border)" onclick="stepMotorSpeed(${id},-1)">−</button>
+            <input type="range" min="0" max="100" value="${m.speed}" oninput="onMotorSpeedInput(${id}, this.value)" onpointerdown="motorSliderDown(${id})" onpointerup="motorSliderUp(${id})" onpointercancel="motorSliderUp(${id})" />
+            <button class="btn-xs" style="border:.5px solid var(--border)" onclick="stepMotorSpeed(${id},1)">+</button>
+            <span class="blink-v">${m.speed}%</span>
+          </div>`;
+        return `
+        <div class="mcard" id="motor-card-${id}" style="margin-top:${idx === 0 ? '0' : '.6rem'}">
+          <div class="row2">
+            <span class="lbl">Motor #${id}</span>
+            <button class="btn-xs" onclick="sendMotorDeinit(${id})">✕ Deinit</button>
+          </div>
+          <div class="motor-mode-toggle">
+            <button class="${mode === 'buttons' ? 'active' : ''}" onclick="setMotorMode(${id},'buttons')">🎚 Tombol</button>
+            <button class="${mode === 'joystick' ? 'active' : ''}" onclick="setMotorMode(${id},'joystick')">🕹 Joystick</button>
+          </div>
+          ${controls}
+        </div>`;
+      }).join('');
+    }
+
+    // ── TX HELPER ─────────────────────────────
+    const pkt = (...bytes) => {
+      const b = new Uint8Array(8);
+      bytes.forEach((v, i) => { b[i] = v; });
+      return b;
+    };
+
+    // ── MANUAL COMMAND ────────────────────────
+    // Presets just fill in the cmd field for convenience — d0..d4 are
+    // still entered manually, since their meaning depends on cmd.
+    const MAN_PRESETS = [
+      ['1', '1 · Reboot (arg0: 0=normal,1=bootsel)'],
+      ['21', '21 · LED (arg0: 0=off,1=on,2=blink; arg1=delay)'],
+      ['22', '22 · RGB (arg0=0 init/deinit | arg0=1 set R,G,B)'],
+      ['41', '41 · ADC DMA (arg0: 0=stop,1=start)'],
+      ['42', '42 · ADC read CH0'],
+      ['43', '43 · ADC read CH1'],
+      ['44', '44 · ADC read CH2'],
+      ['45', '45 · ADC read CH3'],
+      ['46', '46 · ADC read CH4 (temp)'],
+      ['61', '61 · Motor INIT (arg0=0, arg1=driver 0-3, arg2..5=pins)'],
+      ['61', '61 · Motor DEINIT (arg0=1, arg1=motor_id)'],
+      ['61', '61 · Motor SET_DIR (arg0=2, arg1=motor_id, arg2=dir 0-3)'],
+      ['61', '61 · Motor SET_SPEED (arg0=3, arg1=motor_id, arg2=speed 0-100)']
+    ];
+
+    function initManPresets() {
+      const sel = $('man-preset');
+      MAN_PRESETS.forEach(([val, label]) => {
+        const opt = document.createElement('option');
+        opt.value = val; opt.textContent = label;
+        sel.appendChild(opt);
+      });
+    }
+
+    function applyManPreset() {
+      const val = $('man-preset').value;
+      if (val) $('man-cmd').value = val;
+      updateManHex();
+    }
+
+    function clampByte(v) {
+      v = parseInt(v, 10);
+      if (isNaN(v)) v = 0;
+      // wrap like an unsigned byte: -1 -> 255, 256 -> 0, etc.
+      return ((v % 256) + 256) % 256;
+    }
+
+    // Rewrites the field's displayed value to its wrapped byte value once the
+    // user leaves it (so typing -1 visibly becomes 255, not just internally).
+    function normalizeManField(id) {
+      const el = $(id);
+      el.value = clampByte(el.value);
+      updateManHex();
+    }
+
+    // cid + cmd + arg0..arg5 = 8 explicit bytes, the full packet (no auto-padding).
+    function readManVals() {
+      return {
+        cid: clampByte($('man-cid').value),
+        cmd: clampByte($('man-cmd').value),
+        arg0: clampByte($('man-arg0').value),
+        arg1: clampByte($('man-arg1').value),
+        arg2: clampByte($('man-arg2').value),
+        arg3: clampByte($('man-arg3').value),
+        arg4: clampByte($('man-arg4').value),
+        arg5: clampByte($('man-arg5').value)
+      };
+    }
+
+    function buildManPkt(v) {
+      return new Uint8Array([v.cid, v.cmd, v.arg0, v.arg1, v.arg2, v.arg3, v.arg4, v.arg5]);
+    }
+
+    function updateManHex() {
+      const v = readManVals();
+      const b = buildManPkt(v);
+      const hex = Array.from(b).map(x => '0x' + x.toString(16).toUpperCase().padStart(2, '0')).join(', ');
+      $('man-hex').textContent = `Preview (8 bytes): [${hex}]`;
+    }
+
+    function sendManualCmd() {
+      if (!isWS()) { log('Not connected', 'err'); return; }
+      const v = readManVals();
+      const b = buildManPkt(v);
+      ws.send(b.buffer);
+      log(`TX manual cid=${v.cid} cmd=${v.cmd} [${v.arg0}, ${v.arg1}, ${v.arg2}, ${v.arg3}, ${v.arg4}, ${v.arg5}]`, 'tx');
+      pushManHistory(v, b);
+      updateManHex();
+    }
+
+    // ── MANUAL COMMAND HISTORY ────────────────
+    const MAN_HIST_KEY = 'pico-man-history';
+    let manHistory = [];
+
+    function loadManHistory() {
+      try {
+        const raw = localStorage.getItem(MAN_HIST_KEY);
+        manHistory = raw ? JSON.parse(raw) : [];
+      } catch (e) { manHistory = []; }
+      renderManHistory();
+    }
+
+    function saveManHistory() {
+      try { localStorage.setItem(MAN_HIST_KEY, JSON.stringify(manHistory)); } catch (e) { }
+    }
+
+    function renderManHistory() {
+      const wrap = $('man-hist');
+      if (!manHistory.length) {
+        wrap.innerHTML = '<div class="man-hist-empty">No commands sent yet</div>';
+        return;
+      }
+      wrap.innerHTML = manHistory.map((h, i) => `
+        <div class="man-hist-item">
+          <div class="man-hist-main">
+            <span class="man-hist-hex">${h.hex}</span>
+            <span class="man-hist-ts">${h.ts}</span>
+          </div>
+          <button class="man-hist-reuse" onclick="reuseManHistory(${i})">↺ Reuse</button>
+        </div>
+      `).join('');
+    }
+
+    function pushManHistory(v, b) {
+      const hex = Array.from(b).map(x => '0x' + x.toString(16).toUpperCase().padStart(2, '0')).join(', ');
+      const ts = new Date().toLocaleTimeString('en', { hour12: false });
+      manHistory.unshift({ ...v, hex, ts });
+      if (manHistory.length > 20) manHistory.length = 20;
+      saveManHistory();
+      renderManHistory();
+    }
+
+    function reuseManHistory(i) {
+      const h = manHistory[i];
+      if (!h) return;
+      $('man-cid').value = h.cid;
+      $('man-cmd').value = h.cmd;
+      $('man-arg0').value = h.arg0;
+      $('man-arg1').value = h.arg1;
+      $('man-arg2').value = h.arg2;
+      $('man-arg3').value = h.arg3;
+      $('man-arg4').value = h.arg4;
+      $('man-arg5').value = h.arg5;
+      updateManHex();
+    }
+
+    function clearManHistory() {
+      manHistory = [];
+      saveManHistory();
+      renderManHistory();
+    }
+
+    // ── WEBSOCKET ─────────────────────────────
+    function toggleWS() { isWS() ? ws.close(1000, "normal closure") : connectWS(); }
+
+    function connectWS() {
+      const url = $('ws-url').value.trim(), tok = $('ws-tok').value.trim();
+      ws?.close(1000, "normal closure"); ws = null;
+      try {
+        ws = new WebSocket(url);
+        ws.binaryType = 'arraybuffer';
+        ws.onopen = () => {
+          ws.send(JSON.stringify({ token: tok }));
+          $('ws-dot').className = 'dot on';
+          $('ws-lbl').textContent = 'Connected';
+          $('ws-btn').textContent = '✕ Disconnect';
+          $('ws-btn').className = 'active';
+          setEnabled(true);
+          log('Connected — token sent', 'info');
+        };
+        ws.onclose = e => {
+          $('ws-dot').className = 'dot';
+          $('ws-lbl').textContent = 'Disconnected';
+          $('ws-btn').textContent = '⚡ Connect';
+          $('ws-btn').className = '';
+          setEnabled(false);
+          clientId = 1;
+          adcOn = false; resetADC();
+          $('adc-dot').className = 'dot';
+          $('adc-lbl').textContent = 'ADC DMA Stopped';
+          $('adc-btn').textContent = '▶ Start';
+          $('adc-btn').className = 'btn-sm';
+          // reset RGB badge
+          rgbInited = false; syncRgbBadge(false);
+          // reset motors
+          Object.keys(motors).forEach(id => delete motors[id]);
+          renderMotors();
+          log(`Disconnected code=${e.code} reason="${e.reason}"`, 'err');
+        };
+        ws.onmessage = e => { parseBinary(e.data); };
+        ws.onerror = () => log('WS error', 'err');
+      } catch (e) { log('Error: ' + e.message, 'err'); }
+    }
+
+    // ── LOG ───────────────────────────────────
+    const logEl = $('log'), jumpEl = $('log-jump');
+    const atBottom = () => logEl.scrollHeight - logEl.scrollTop - logEl.clientHeight < 4;
+
+    function onScroll() { jumpEl.style.display = atBottom() ? 'none' : 'block'; }
+    function jumpLog() { logEl.scrollTop = logEl.scrollHeight; jumpEl.style.display = 'none'; }
+    function clearLog() { logEl.innerHTML = ''; jumpEl.style.display = 'none'; }
+
+    function log(msg, type = 'info') {
+      const bot = atBottom();
+      const el = document.createElement('div');
+      el.innerHTML = `<span class="ts">[${new Date().toLocaleTimeString('en', { hour12: false })}]</span> <span class="${type}">${msg}</span>`;
+      logEl.appendChild(el);
+      if (logEl.children.length > 200) logEl.removeChild(logEl.firstChild);
+      if (bot) { logEl.scrollTop = logEl.scrollHeight; jumpEl.style.display = 'none'; }
+      else { jumpEl.style.display = 'block'; }
+    }
+
+    // ── THEME ─────────────────────────────────
+    const TK = 'pico-theme';
+    function applyTheme(t) {
+      document.documentElement.setAttribute('data-theme', t);
+      $('theme-btn').textContent = t === 'dark' ? '☀️ Light' : '🌙 Dark';
+    }
+    function toggleTheme() {
+      const n = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      localStorage.setItem(TK, n); applyTheme(n);
+    }
+    const sv = localStorage.getItem(TK);
+    if (sv) { applyTheme(sv); }
+    else {
+      applyTheme(matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
+      matchMedia('(prefers-color-scheme:dark)').addEventListener('change', e => {
+        if (!localStorage.getItem(TK)) applyTheme(e.matches ? 'dark' : 'light');
+      });
+    }
+
+    // ── INIT ──────────────────────────────────
+    setEnabled(false);
+    syncRgbBadge(false);
+    syncRgbUI(82, 168, 74, '#52A84A');
+    initMotorDriverSelect();
+    initManPresets();
+    updateManHex();
+    loadManHistory();
+  </script>
+</body>
+
+</html>
