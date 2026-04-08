@@ -1,0 +1,1 @@
+ACTION=="add", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="cafe", ATTRS{idProduct}=="4000", TAG+="systemd", ENV{SYSTEMD_WANTS}+="raspberry-pi-pico-hid@%k.service"
