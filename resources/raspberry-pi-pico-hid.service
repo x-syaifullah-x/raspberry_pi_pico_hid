@@ -1,0 +1,12 @@
+[Unit]
+Description=Raspberry Pi Pico HID (%i)
+After=dev-%i.device
+BindsTo=dev-%i.device
+
+[Service]
+Type=simple
+ExecStart=/media/xxx/sdc2/xxx/Git/x-syaifullah-x/raspberry_pi_pico_hid/server/build/raspbarry_pi_pico_hid_server /dev/%i
+Restart=no
+
+[Install]
+WantedBy=multi-user.target
